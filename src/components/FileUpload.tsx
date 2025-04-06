@@ -1,8 +1,9 @@
 
 import React, { useState, useRef } from 'react';
-import { Upload, FileUp, X } from 'lucide-react';
+import { Upload, FileUp, X, AlertTriangle } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 interface FileUploadProps {
   onFileSelected: (file: File) => void;
@@ -12,6 +13,7 @@ interface FileUploadProps {
 const FileUpload: React.FC<FileUploadProps> = ({ onFileSelected, isProcessing }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -36,6 +38,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileSelected, isProcessing })
     e.preventDefault();
     e.stopPropagation();
     setIsDragging(false);
+    setValidationError(null);
 
     const files = e.dataTransfer.files;
     if (files && files.length > 0) {
@@ -44,6 +47,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileSelected, isProcessing })
   };
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setValidationError(null);
     const files = e.target.files;
     if (files && files.length > 0) {
       validateAndProcessFile(files[0]);
@@ -55,18 +59,22 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileSelected, isProcessing })
     const maxSize = 10 * 1024 * 1024; // 10MB
 
     if (!validTypes.includes(file.type)) {
+      const errorMessage = "Please upload an image (JPEG, PNG, WebP) or PDF file";
+      setValidationError(errorMessage);
       toast({
         title: "Invalid file type",
-        description: "Please upload an image (JPEG, PNG, WebP) or PDF file",
+        description: errorMessage,
         variant: "destructive"
       });
       return;
     }
 
     if (file.size > maxSize) {
+      const errorMessage = "Maximum file size is 10MB";
+      setValidationError(errorMessage);
       toast({
         title: "File too large",
-        description: "Maximum file size is 10MB",
+        description: errorMessage,
         variant: "destructive"
       });
       return;
@@ -78,6 +86,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileSelected, isProcessing })
 
   const handleRemoveFile = () => {
     setSelectedFile(null);
+    setValidationError(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -90,7 +99,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileSelected, isProcessing })
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full space-y-4">
       <input
         type="file"
         ref={fileInputRef}
@@ -100,11 +109,19 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileSelected, isProcessing })
         disabled={isProcessing}
       />
       
+      {validationError && (
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{validationError}</AlertDescription>
+        </Alert>
+      )}
+      
       {!selectedFile ? (
         <div
-          className={`file-drop-area flex flex-col items-center justify-center h-52 rounded-lg p-6 ${
-            isDragging ? 'active' : ''
-          }`}
+          className={`file-drop-area flex flex-col items-center justify-center h-52 rounded-lg p-6 border-2 border-dashed ${
+            isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
+          } transition-all duration-200`}
           onDragEnter={handleDragEnter}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
