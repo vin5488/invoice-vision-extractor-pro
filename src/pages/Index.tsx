@@ -2,14 +2,13 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { FileUp, Wand2, Table, ArrowRight } from 'lucide-react';
+import { FileUp, Table } from 'lucide-react';
 
-import FileUpload from '@/components/FileUpload';
-import ImagePreview from '@/components/ImagePreview';
-import ExtractedData from '@/components/ExtractedData';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import UploadTab from '@/components/UploadTab';
+import ResultsTab from '@/components/ResultsTab';
 import ProcessingOverlay from '@/components/ProcessingOverlay';
 
 import { processInvoice } from '@/utils/dataExtraction';
@@ -81,20 +80,18 @@ const Index = () => {
     }
   };
 
+  const handleReset = () => {
+    setActiveTab("upload");
+    setFile(null);
+    setExtractedData(null);
+    setProcessedImageUrl(null);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="container px-4 max-w-5xl">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-2">
-            <span className="gradient-text">InvoiceVision</span> Extractor
-          </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Extract structured data from your invoices automatically using advanced OCR technology
-          </p>
-        </div>
+        <Header />
         
-        {/* Main content */}
         <Card className="border shadow-lg">
           <CardHeader>
             <CardTitle>Invoice Data Extraction</CardTitle>
@@ -113,83 +110,31 @@ const Index = () => {
                 </TabsTrigger>
               </TabsList>
               
-              <TabsContent value="upload" className="space-y-6">
-                <FileUpload 
-                  onFileSelected={handleFileUpload} 
+              <TabsContent value="upload">
+                <UploadTab
+                  file={file}
                   isProcessing={isProcessing}
+                  onFileSelected={handleFileUpload}
+                  onProcess={handleProcess}
                 />
-                
-                {file && !isProcessing && (
-                  <div className="mt-6">
-                    <Separator className="my-6" />
-                    <div className="flex justify-between items-center mb-4">
-                      <h3 className="text-lg font-medium">Preview</h3>
-                      <Button 
-                        onClick={handleProcess}
-                        disabled={isProcessing || !file}
-                        className="bg-gradient-blue hover:opacity-90"
-                      >
-                        <Wand2 className="mr-2 h-4 w-4" /> Process Invoice
-                      </Button>
-                    </div>
-                    <ImagePreview file={file} processedImageUrl={null} />
-                  </div>
-                )}
               </TabsContent>
               
-              <TabsContent value="results" className="space-y-8">
-                {extractedData && (
-                  <>
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      <div>
-                        <h3 className="text-lg font-medium mb-4">Processed Image</h3>
-                        <ImagePreview 
-                          file={file} 
-                          processedImageUrl={processedImageUrl} 
-                          highlightedAreas={highlightAreas}
-                        />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-medium mb-4">Extracted Data</h3>
-                        <ExtractedData 
-                          data={extractedData} 
-                          isLoading={false} 
-                        />
-                      </div>
-                    </div>
-                    
-                    <div className="flex justify-center mt-6">
-                      <Button 
-                        onClick={() => {
-                          setActiveTab("upload");
-                          setFile(null);
-                          setExtractedData(null);
-                          setProcessedImageUrl(null);
-                        }}
-                        variant="outline"
-                        className="mr-4"
-                      >
-                        Upload New Invoice
-                      </Button>
-                      <Button className="bg-gradient-blue hover:opacity-90">
-                        Process Another Section <ArrowRight className="ml-2 h-4 w-4" />
-                      </Button>
-                    </div>
-                  </>
-                )}
+              <TabsContent value="results">
+                <ResultsTab
+                  file={file}
+                  processedImageUrl={processedImageUrl}
+                  extractedData={extractedData}
+                  highlightAreas={highlightAreas}
+                  onReset={handleReset}
+                />
               </TabsContent>
             </Tabs>
           </CardContent>
         </Card>
         
-        {/* Footer */}
-        <footer className="mt-16 text-center text-sm text-gray-500">
-          <p>InvoiceVision Extractor Pro &copy; {new Date().getFullYear()}</p>
-          <p className="mt-1">Powered by advanced OCR and machine learning technologies</p>
-        </footer>
+        <Footer />
       </div>
       
-      {/* Processing overlay */}
       <ProcessingOverlay 
         isActive={isProcessing} 
         currentStage={processingStage} 
