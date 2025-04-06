@@ -4,12 +4,14 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight } from 'lucide-react';
 import ImagePreview from '@/components/ImagePreview';
 import ExtractedData from '@/components/ExtractedData';
+import InvoiceMetadata from '@/components/InvoiceMetadata';
 
 interface ResultsTabProps {
   file: File | null;
   processedImageUrl: string | null;
   extractedData: Array<Array<string>> | null;
   highlightAreas: Array<{x: number, y: number, width: number, height: number}>;
+  metadata?: { [key: string]: string };
   onReset: () => void;
 }
 
@@ -18,12 +20,20 @@ const ResultsTab: React.FC<ResultsTabProps> = ({
   processedImageUrl,
   extractedData,
   highlightAreas,
+  metadata,
   onReset
 }) => {
   if (!extractedData) return null;
   
   return (
     <div className="space-y-8">
+      {metadata && Object.keys(metadata).length > 0 && (
+        <div>
+          <h3 className="text-lg font-medium mb-4">Invoice Information</h3>
+          <InvoiceMetadata metadata={metadata} />
+        </div>
+      )}
+      
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div>
           <h3 className="text-lg font-medium mb-4">Processed Image</h3>

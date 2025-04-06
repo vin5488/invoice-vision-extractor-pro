@@ -21,6 +21,7 @@ const Index = () => {
   const [extractedData, setExtractedData] = useState<Array<Array<string>> | null>(null);
   const [highlightAreas, setHighlightAreas] = useState<Array<{x: number, y: number, width: number, height: number}>>([]);
   const [processingStage, setProcessingStage] = useState("Initializing...");
+  const [invoiceMetadata, setInvoiceMetadata] = useState<{ [key: string]: string } | undefined>(undefined);
   
   const { toast } = useToast();
 
@@ -29,6 +30,7 @@ const Index = () => {
     setProcessedImageUrl(null);
     setExtractedData(null);
     setHighlightAreas([]);
+    setInvoiceMetadata(undefined);
   };
 
   const handleProcess = async () => {
@@ -56,6 +58,7 @@ const Index = () => {
       // Set the extracted data
       setExtractedData(result.data);
       setHighlightAreas(result.highlightAreas);
+      setInvoiceMetadata(result.metadata);
       
       // Create a URL for the processed image
       const imageUrl = URL.createObjectURL(file);
@@ -85,6 +88,7 @@ const Index = () => {
     setFile(null);
     setExtractedData(null);
     setProcessedImageUrl(null);
+    setInvoiceMetadata(undefined);
   };
 
   return (
@@ -125,6 +129,7 @@ const Index = () => {
                   processedImageUrl={processedImageUrl}
                   extractedData={extractedData}
                   highlightAreas={highlightAreas}
+                  metadata={invoiceMetadata}
                   onReset={handleReset}
                 />
               </TabsContent>

@@ -1,0 +1,23 @@
+
+{
+  "imageUrl": "public/lovable-uploads/075066ec-bf8d-4dda-93c0-49e1b34ad05d.png",
+  "metadata": {
+    "State Name": "Karnataka",
+    "State Code": "29",
+    "Terms of Delivery": "Standard"
+  },
+  "data": [
+    ["SI No.", "Part No", "Description of Goods", "HSN/SAC", "Quantity", "Rate", "per", "Disc %", "Amount"],
+    ["1", "Laser Cutting-MIT-EA012B014-04", "SIZE:147.4X179.7X6MM-CUT LENGTH-1207MM-HR", "73269070", "116 Nos.", "118.500", "Nos.", "", "13,746.000"],
+    ["2", "Laser Cutting-MIT-EA015C294-02", "SIZE:110X222.4X6MM-CUT LENGTH-949MM-HR", "73269070", "100 Nos.", "103.000", "Nos.", "", "10,300.000"],
+    ["3", "Laser Cutting-MIT-EA021C281-05", "SIZE:110X125X6MM-CUT LENGTH-543MM-HR", "73269070", "10 Nos.", "58.400", "Nos.", "", "584.000"],
+    ["4", "Laser Cutting-MIT-EA033C300-01", "SIZE:170X240X6MM-CUT LENGTH-1287MM-HR", "73269070", "20 Nos.", "160.900", "Nos.", "", "3,218.000"],
+    ["5", "Laser Cutting-MIT-EA033C301-01", "SIZE:125X145X6MM-CUT LENGTH-768MM-HR", "73269070", "10 Nos.", "78.900", "Nos.", "", "789.000"],
+    ["6", "Laser Cutting-MIT-EA111B538-04 REV 0", "SIZE:175X355X6MM- CUT LENGTH1384MM-HR", "73269070", "12 Nos.", "223.300", "Nos.", "", "2,679.600"],
+    ["7", "Laser Cutting-MIT-EA131D885-01", "SIZE:32X32X6MM-CUT LENGTH -157MM-HR 2062", "73269070", "180 Nos.", "8.800", "Nos.", "", "1,584.000"],
+    ["8", "Laser Cutting-MIT-EA175C796-01", "SIZE:115X255.4X6MM-CUT LENGTH-1322MM-HR", "73269070", "28 Nos.", "130.800", "Nos.", "", "3,662.400"],
+    ["9", "Laser Cutting-MIT-EA179D554-01", "SIZE:100X110X6MM-CUT LENGTH-664MM-HR", "73269070", "10 Nos.", "55.900", "Nos.", "", "559.000"],
+    ["10", "Laser Cutting-MIT-EA214C825-01L51", "SIZE:50X1155X6MM-CUT LENGTH 2617MM-HR", "73269070", "6 Nos.", "257.900", "Nos.", "", "1,547.400"],
+    ["11", "Laser Cutting-MIT-EA214C825-01L52", "SIZE:50X1230X6MM-CUT LENGTH 2767MM-HR", "73269070", "6 Nos.", "273.900", "Nos.", "", "1,643.400"]
+  ]
+}

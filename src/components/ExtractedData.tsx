@@ -1,10 +1,12 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Download, Copy, Check } from 'lucide-react';
+import { Download, Copy, Check, Filter } from 'lucide-react';
 import { useToast } from "@/components/ui/use-toast";
+import { extractMaterialIds } from "@/utils/dataExtraction";
+import { Badge } from "@/components/ui/badge";
 
 interface ExtractedDataProps {
   data: Array<Array<string>> | null;
@@ -14,6 +16,15 @@ interface ExtractedDataProps {
 const ExtractedData: React.FC<ExtractedDataProps> = ({ data, isLoading }) => {
   const { toast } = useToast();
   const [isCopied, setIsCopied] = useState(false);
+  const [materialIds, setMaterialIds] = useState<string[]>([]);
+  const [showMaterialIds, setShowMaterialIds] = useState(false);
+  
+  useEffect(() => {
+    if (data && data.length > 1) {
+      const ids = extractMaterialIds(data);
+      setMaterialIds(ids);
+    }
+  }, [data]);
 
   const exportToCSV = () => {
     if (!data || data.length === 0) return;
@@ -64,6 +75,10 @@ const ExtractedData: React.FC<ExtractedDataProps> = ({ data, isLoading }) => {
         });
       }
     );
+  };
+
+  const toggleMaterialIds = () => {
+    setShowMaterialIds(!showMaterialIds);
   };
 
   if (isLoading) {
@@ -118,6 +133,17 @@ const ExtractedData: React.FC<ExtractedDataProps> = ({ data, isLoading }) => {
         <CardTitle className="flex items-center justify-between">
           <span>Extracted Data</span>
           <div className="flex gap-2">
+            {materialIds.length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={toggleMaterialIds}
+                className="flex items-center gap-1 text-xs"
+              >
+                <Filter className="h-3 w-3" />
+                {showMaterialIds ? "Hide" : "Show"} Material IDs
+              </Button>
+            )}
             <Button
               variant="outline"
               size="sm"
@@ -140,21 +166,35 @@ const ExtractedData: React.FC<ExtractedDataProps> = ({ data, isLoading }) => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="table-container">
+        <div className="table-container overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
                 {headers.map((header, i) => (
-                  <TableHead key={i}>{header}</TableHead>
+                  <TableHead key={i} className="whitespace-nowrap">{header}</TableHead>
                 ))}
+                {showMaterialIds && <TableHead>Material ID</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
               {rows.map((row, rowIndex) => (
                 <TableRow key={rowIndex}>
                   {row.map((cell, cellIndex) => (
-                    <TableCell key={cellIndex}>{cell}</TableCell>
+                    <TableCell key={cellIndex} className="whitespace-nowrap">
+                      {cellIndex === 1 && cell.includes("MIT-") ? (
+                        <span className="font-medium">{cell}</span>
+                      ) : cell}
+                    </TableCell>
                   ))}
+                  {showMaterialIds && (
+                    <TableCell>
+                      {materialIds[rowIndex] && (
+                        <Badge variant="secondary" className="font-mono text-xs">
+                          {materialIds[rowIndex]}
+                        </Badge>
+                      )}
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>
