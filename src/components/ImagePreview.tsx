@@ -37,6 +37,8 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({
 
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
+    // Reset zoom when toggling fullscreen for best viewing experience
+    setZoom(1);
   };
 
   const handleZoomIn = () => {
@@ -65,6 +67,7 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({
           top: `${area.y}%`,
           width: `${area.width}%`,
           height: `${area.height}%`,
+          pointerEvents: 'none', // Ensure highlights don't interfere with interactions
         }}
       />
     ));
@@ -106,12 +109,21 @@ const ImagePreview: React.FC<ImagePreviewProps> = ({
       </div>
       
       <div className="h-full w-full overflow-auto flex items-center justify-center">
-        <div className="relative" style={{ transform: `scale(${zoom})`, transition: 'transform 0.2s' }}>
+        <div 
+          className="relative transform-gpu transition-transform duration-200" 
+          style={{ 
+            transform: `scale(${zoom})`,
+            transformOrigin: 'center center',
+          }}
+        >
           <img 
             src={imageUrl} 
             alt="Invoice Preview" 
             className="max-w-full object-contain"
-            style={{ maxHeight: isFullscreen ? '90vh' : '380px' }}
+            style={{ 
+              maxHeight: isFullscreen ? '90vh' : '380px',
+              width: 'auto',
+            }}
           />
           {renderHighlightOverlays()}
         </div>

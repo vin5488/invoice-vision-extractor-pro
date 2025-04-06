@@ -36,7 +36,7 @@ const ProcessingOverlay: React.FC<ProcessingOverlayProps> = ({
           )}
           
           <p className="text-sm text-gray-500 text-center">
-            This may take a few moments depending on the complexity of your document.
+            Analyzing the full document to extract all available information. This may take a few moments depending on the complexity of your invoice.
           </p>
         </div>
       </div>
