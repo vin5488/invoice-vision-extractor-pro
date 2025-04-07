@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -7,7 +6,6 @@ import { ChevronRight, Download, FileSpreadsheet } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import * as XLSX from 'xlsx';
 
-// Sample invoice templates based on provided images
 const INVOICE_TEMPLATES = [
   {
     type: "construction",
@@ -94,7 +92,6 @@ const MultipleInvoices = ({ extractedData }: { extractedData: any[] }) => {
   const { toast } = useToast();
 
   const generateExcelFile = (data: any[]) => {
-    // Create worksheet from data
     const worksheet = XLSX.utils.json_to_sheet(
       data.map(invoice => ({
         'Invoice Number': invoice.invoiceNumber,
@@ -105,26 +102,19 @@ const MultipleInvoices = ({ extractedData }: { extractedData: any[] }) => {
       }))
     );
     
-    // Create workbook and add worksheet
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Invoices");
     
-    // Generate Excel file and trigger download
     const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
     return new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
   };
 
-  // Function to generate a sample invoice based on template
   const generateSampleInvoice = (templateIndex: number, baseInvoice: any) => {
-    // Get the template
     const template = INVOICE_TEMPLATES[templateIndex % INVOICE_TEMPLATES.length];
     
-    // Create a workbook with styling
     const wb = XLSX.utils.book_new();
     
-    // Create worksheet data based on template type
     if (template.type === "construction") {
-      // Create header with company info
       const header = [
         ["", template.title, ""],
         ["", ""],
@@ -144,12 +134,10 @@ const MultipleInvoices = ({ extractedData }: { extractedData: any[] }) => {
         ["DESCRIPTION", "QTY", "RATE", "AMOUNT"]
       ];
       
-      // Add items
       template.items.forEach(item => {
         header.push([item.description, item.quantity, item.rate, item.total]);
       });
       
-      // Add totals
       header.push(
         ["", "", "SUBTOTAL:", template.subtotal],
         ["", "", "TAX (8%):", template.tax],
@@ -161,18 +149,15 @@ const MultipleInvoices = ({ extractedData }: { extractedData: any[] }) => {
       const ws = XLSX.utils.aoa_to_sheet(header);
       XLSX.utils.book_append_sheet(wb, ws, "Invoice");
       
-      // Apply some basic styling (column widths)
       ws['!cols'] = [{ wch: 40 }, { wch: 10 }, { wch: 15 }, { wch: 15 }];
     } 
     else if (template.type === "manufacturing") {
-      // Create header for manufacturing invoice
       const header = [
         ["State Name:", template.stateInfo, "", "", "", "", "Terms of Delivery:", template.termsOfDelivery],
         [""],
         ["SI No.", "Part No", "Description of Goods", "HSN/SAC", "Quantity", "Rate", "per", "Disc. %", "Amount"]
       ];
       
-      // Add items
       template.items.forEach((item, index) => {
         header.push([
           index + 1, 
@@ -187,20 +172,17 @@ const MultipleInvoices = ({ extractedData }: { extractedData: any[] }) => {
         ]);
       });
       
-      // Add total
       header.push(["", "", "", "", "", "", "", "Total:", template.total.toFixed(3)]);
       
       const ws = XLSX.utils.aoa_to_sheet(header);
       XLSX.utils.book_append_sheet(wb, ws, "Invoice");
       
-      // Apply some basic styling (column widths)
       ws['!cols'] = [
         { wch: 5 }, { wch: 25 }, { wch: 30 }, { wch: 10 }, 
         { wch: 10 }, { wch: 10 }, { wch: 5 }, { wch: 10 }, { wch: 15 }
       ];
     }
     else if (template.type === "services") {
-      // Create header with company info
       const header = [
         [template.company, "", "", "", "INVOICE"],
         [template.companyInfo.address],
@@ -218,12 +200,10 @@ const MultipleInvoices = ({ extractedData }: { extractedData: any[] }) => {
         ["Services", "", "Quantity", "Price", "Amount"],
       ];
       
-      // Add services
       template.services.forEach((service) => {
-        header.push([service.description, "", service.quantity, service.price.toFixed(2), service.amount.toFixed(2)]);
+        header.push([service.description, "", service.quantity.toString(), service.price.toFixed(2), service.amount.toFixed(2)]);
       });
       
-      // Add totals
       header.push(
         ["", "", "", "Subtotal:", template.subtotal.toFixed(2)],
         ["", "", "", "Tax 8%:", template.tax.toFixed(2)],
@@ -234,20 +214,16 @@ const MultipleInvoices = ({ extractedData }: { extractedData: any[] }) => {
       const ws = XLSX.utils.aoa_to_sheet(header);
       XLSX.utils.book_append_sheet(wb, ws, "Invoice");
       
-      // Apply some basic styling (column widths)
       ws['!cols'] = [{ wch: 30 }, { wch: 10 }, { wch: 10 }, { wch: 15 }, { wch: 15 }];
     }
     
-    // Generate Excel file and trigger download
     const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
     return new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
   };
 
   const generateDetailedExcelFile = (invoice: any) => {
-    // Create workbook
     const workbook = XLSX.utils.book_new();
     
-    // Add invoice details worksheet
     const detailsData = [
       { 'Property': 'Invoice Number', 'Value': invoice.invoiceNumber },
       { 'Property': 'Date', 'Value': invoice.date },
@@ -257,7 +233,6 @@ const MultipleInvoices = ({ extractedData }: { extractedData: any[] }) => {
     const detailsSheet = XLSX.utils.json_to_sheet(detailsData);
     XLSX.utils.book_append_sheet(workbook, detailsSheet, "Invoice Details");
     
-    // Add items worksheet if items exist
     if (invoice.items && invoice.items.length > 0) {
       const itemsSheet = XLSX.utils.json_to_sheet(invoice.items.map((item: any) => ({
         'Description': item.description,
@@ -268,13 +243,11 @@ const MultipleInvoices = ({ extractedData }: { extractedData: any[] }) => {
       XLSX.utils.book_append_sheet(workbook, itemsSheet, "Invoice Items");
     }
     
-    // Generate Excel file and trigger download
     const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
     return new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
   };
 
   const downloadBlob = (blob: Blob, fileName: string) => {
-    // Create a download link and trigger it
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
@@ -283,7 +256,6 @@ const MultipleInvoices = ({ extractedData }: { extractedData: any[] }) => {
     link.click();
     link.remove();
     
-    // Clean up the URL object
     setTimeout(() => window.URL.revokeObjectURL(url), 100);
   };
 
