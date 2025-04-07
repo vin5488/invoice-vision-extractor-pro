@@ -5,26 +5,118 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { ChevronRight, Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import * as XLSX from 'xlsx';
 
 const MultipleInvoices = ({ extractedData }: { extractedData: any[] }) => {
   const [selectedInvoice, setSelectedInvoice] = useState<any | null>(null);
   const { toast } = useToast();
 
+  const generateExcelFile = (data: any[]) => {
+    // Create worksheet from data
+    const worksheet = XLSX.utils.json_to_sheet(
+      data.map(invoice => ({
+        'Invoice Number': invoice.invoiceNumber,
+        'Date': invoice.date,
+        'Material ID': invoice.materialId,
+        'Total': invoice.total,
+        'Items Count': invoice.items?.length || 0
+      }))
+    );
+    
+    // Create workbook and add worksheet
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Invoices");
+    
+    // Generate Excel file and trigger download
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    return new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  };
+
+  const generateDetailedExcelFile = (invoice: any) => {
+    // Create workbook
+    const workbook = XLSX.utils.book_new();
+    
+    // Add invoice details worksheet
+    const detailsData = [
+      { 'Property': 'Invoice Number', 'Value': invoice.invoiceNumber },
+      { 'Property': 'Date', 'Value': invoice.date },
+      { 'Property': 'Material ID', 'Value': invoice.materialId },
+      { 'Property': 'Total', 'Value': invoice.total }
+    ];
+    const detailsSheet = XLSX.utils.json_to_sheet(detailsData);
+    XLSX.utils.book_append_sheet(workbook, detailsSheet, "Invoice Details");
+    
+    // Add items worksheet if items exist
+    if (invoice.items && invoice.items.length > 0) {
+      const itemsSheet = XLSX.utils.json_to_sheet(invoice.items.map((item: any) => ({
+        'Description': item.description,
+        'Quantity': item.quantity,
+        'Unit Price': item.unitPrice,
+        'Total': item.total
+      })));
+      XLSX.utils.book_append_sheet(workbook, itemsSheet, "Invoice Items");
+    }
+    
+    // Generate Excel file and trigger download
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    return new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  };
+
+  const downloadBlob = (blob: Blob, fileName: string) => {
+    // Create a download link and trigger it
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', fileName);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    
+    // Clean up the URL object
+    setTimeout(() => window.URL.revokeObjectURL(url), 100);
+  };
+
   const handleExportToExcel = () => {
-    // This is a simulated Excel export
-    // In a real implementation, you would generate an actual Excel file
     toast({
       title: "Excel export initiated",
       description: `Exporting data for ${extractedData.length} invoice(s)`,
     });
     
-    // Simulate download delay
-    setTimeout(() => {
+    try {
+      const excelBlob = generateExcelFile(extractedData);
+      downloadBlob(excelBlob, "Invoices_Summary.xlsx");
+      
       toast({
         title: "Export complete",
-        description: "Invoice data has been exported to Excel",
+        description: "Invoice data has been downloaded as an Excel file",
       });
-    }, 1500);
+    } catch (error) {
+      console.error("Excel generation error:", error);
+      toast({
+        title: "Export failed",
+        description: "There was an error generating the Excel file",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleExportSingleInvoice = (invoice: any) => {
+    try {
+      const excelBlob = generateDetailedExcelFile(invoice);
+      downloadBlob(excelBlob, `Invoice_${invoice.invoiceNumber}.xlsx`);
+      
+      toast({
+        title: "Invoice exported",
+        description: `${invoice.fileName} has been downloaded as an Excel file`,
+      });
+    } catch (error) {
+      console.error("Excel generation error:", error);
+      toast({
+        title: "Export failed",
+        description: "There was an error generating the Excel file",
+        variant: "destructive",
+      });
+    }
   };
 
   const viewInvoiceDetails = (invoice: any) => {
@@ -125,12 +217,7 @@ const MultipleInvoices = ({ extractedData }: { extractedData: any[] }) => {
                         <Button 
                           variant="outline" 
                           className="w-full gap-2"
-                          onClick={() => {
-                            toast({
-                              title: "Invoice exported",
-                              description: `${invoice.fileName} has been exported to Excel`,
-                            });
-                          }}
+                          onClick={() => handleExportSingleInvoice(invoice)}
                         >
                           <Download className="h-4 w-4" />
                           Export this invoice
