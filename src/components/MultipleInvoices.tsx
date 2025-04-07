@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
-import { ChevronRight, Download, FileSpreadsheet } from 'lucide-react';
+import { ChevronRight, Download, FileSpreadsheet, ImageIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import * as XLSX from 'xlsx';
 
@@ -221,6 +222,45 @@ const MultipleInvoices = ({ extractedData }: { extractedData: any[] }) => {
     return new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
   };
 
+  const generateImageBasedExcel = (invoice: any) => {
+    const workbook = XLSX.utils.book_new();
+    
+    // Convert image data to worksheet
+    const worksheet = XLSX.utils.aoa_to_sheet([
+      ["Invoice Generated from Image"],
+      [""],
+      ["Invoice Number:", invoice.invoiceNumber || "Auto-generated"],
+      ["Date:", invoice.date || new Date().toLocaleDateString()],
+      ["Total Amount:", invoice.total || "0.00"],
+      [""],
+      ["Note: This Excel file was generated based on image recognition of invoice data."]
+    ]);
+    
+    // Add the items if available
+    if (invoice.items && invoice.items.length > 0) {
+      const itemsData: any[][] = [
+        ["Description", "Quantity", "Unit Price", "Total"]
+      ];
+      
+      invoice.items.forEach((item: any) => {
+        itemsData.push([
+          item.description,
+          item.quantity.toString(),
+          item.unitPrice,
+          item.total
+        ]);
+      });
+      
+      const itemsSheet = XLSX.utils.aoa_to_sheet(itemsData);
+      XLSX.utils.book_append_sheet(workbook, itemsSheet, "Extracted Items");
+    }
+    
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Invoice Summary");
+    
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    return new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  };
+
   const generateDetailedExcelFile = (invoice: any) => {
     const workbook = XLSX.utils.book_new();
     
@@ -272,6 +312,25 @@ const MultipleInvoices = ({ extractedData }: { extractedData: any[] }) => {
       toast({
         title: "Export complete",
         description: "Invoice data has been downloaded as an Excel file",
+      });
+    } catch (error) {
+      console.error("Excel generation error:", error);
+      toast({
+        title: "Export failed",
+        description: "There was an error generating the Excel file",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleExportFromImage = (invoice: any) => {
+    try {
+      const excelBlob = generateImageBasedExcel(invoice);
+      downloadBlob(excelBlob, `Image_Invoice_${invoice.invoiceNumber || "data"}.xlsx`);
+      
+      toast({
+        title: "Image data exported",
+        description: "Invoice data from image has been converted to Excel",
       });
     } catch (error) {
       console.error("Excel generation error:", error);
@@ -425,6 +484,20 @@ const MultipleInvoices = ({ extractedData }: { extractedData: any[] }) => {
                               Services
                             </Button>
                           </div>
+                        </div>
+
+                        <div className="pt-2">
+                          <Button 
+                            variant="default" 
+                            className="gap-2 w-full"
+                            onClick={() => handleExportFromImage(invoice)}
+                          >
+                            <ImageIcon className="h-4 w-4" />
+                            Export from Image
+                          </Button>
+                          <p className="text-xs text-muted-foreground mt-2 text-center">
+                            Uses image recognition data to generate Excel file
+                          </p>
                         </div>
                       </div>
                     </SheetContent>
