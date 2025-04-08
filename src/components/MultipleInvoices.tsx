@@ -20,7 +20,7 @@ const MultipleInvoices = ({ extractedData }: { extractedData: any[] }) => {
           {extractedData.length} Invoice{extractedData.length !== 1 && 's'} Processed
         </h3>
         <div className="flex flex-wrap gap-2">
-          <Button onClick={handleExportLaserCuttingInvoice} className="gap-2">
+          <Button onClick={() => handleExportLaserCuttingInvoice(extractedData)} className="gap-2">
             <FileText className="h-4 w-4" />
             Export Laser Cutting Template
           </Button>
