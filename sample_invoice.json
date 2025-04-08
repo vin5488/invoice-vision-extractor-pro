@@ -1,0 +1,27 @@
+
+{
+  "stateName": "California, Code: 06",
+  "termsOfDelivery": "30 days net",
+  "items": [
+    {
+      "partNo": "LC-CUSTOM-001",
+      "description": "SIZE:200X150X5MM-CUT LENGTH-850MM-SS",
+      "hsn": "73269070",
+      "quantity": "25 Nos.",
+      "rate": "95.500",
+      "per": "Nos.",
+      "discountPercentage": "5",
+      "amount": "2,268.125"
+    },
+    {
+      "partNo": "LC-CUSTOM-002",
+      "description": "SIZE:300X200X6MM-CUT LENGTH-1200MM-SS",
+      "hsn": "73269070",
+      "quantity": "15 Nos.",
+      "rate": "145.000",
+      "per": "Nos.",
+      "discountPercentage": "0",
+      "amount": "2,175.000"
+    }
+  ]
+}
