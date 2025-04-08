@@ -1,3 +1,4 @@
+
 import { useToast } from '@/hooks/use-toast';
 import * as XLSX from 'xlsx';
 import { INVOICE_TEMPLATES } from '@/constants/invoiceTemplates';
@@ -303,7 +304,7 @@ export const useInvoiceExport = () => {
       
       manufacturingTemplate.items.forEach((item, index) => {
         stateInfoSheet.push([
-          index + 1,
+          (index + 1).toString(), // Convert index+1 to string here
           item.partNo,
           item.description,
           item.hsn,
