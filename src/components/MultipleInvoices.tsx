@@ -1,13 +1,13 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Download, FileText } from 'lucide-react';
+import { FileText } from 'lucide-react';
 import InvoiceTable from '@/components/invoice/InvoiceTable';
 import { useInvoiceExport } from '@/hooks/useInvoiceExport';
 
 const MultipleInvoices = ({ extractedData }: { extractedData: any[] }) => {
   const [selectedInvoice, setSelectedInvoice] = useState<any | null>(null);
-  const { handleExportToExcel, handleExportLaserCuttingInvoice } = useInvoiceExport();
+  const { handleExportLaserCuttingInvoice } = useInvoiceExport();
 
   const viewInvoiceDetails = (invoice: any) => {
     setSelectedInvoice(invoice);
@@ -20,13 +20,9 @@ const MultipleInvoices = ({ extractedData }: { extractedData: any[] }) => {
           {extractedData.length} Invoice{extractedData.length !== 1 && 's'} Processed
         </h3>
         <div className="flex flex-wrap gap-2">
-          <Button onClick={handleExportLaserCuttingInvoice} className="gap-2" variant="outline">
+          <Button onClick={handleExportLaserCuttingInvoice} className="gap-2">
             <FileText className="h-4 w-4" />
             Export Laser Cutting Template
-          </Button>
-          <Button onClick={() => handleExportToExcel(extractedData)} className="gap-2">
-            <Download className="h-4 w-4" />
-            Export Summary
           </Button>
         </div>
       </div>
@@ -38,7 +34,7 @@ const MultipleInvoices = ({ extractedData }: { extractedData: any[] }) => {
 
       <div className="text-center mt-8">
         <p className="text-sm text-muted-foreground">
-          To export all invoice data, click the "Export Summary" button above
+          Click the "Export Laser Cutting Template" button above to download the Excel file
         </p>
       </div>
     </div>
