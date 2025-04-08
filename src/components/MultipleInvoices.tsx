@@ -22,7 +22,7 @@ const MultipleInvoices = ({ extractedData }: { extractedData: any[] }) => {
         <div className="flex flex-wrap gap-2">
           <Button onClick={() => handleExportLaserCuttingInvoice(extractedData)} className="gap-2">
             <FileText className="h-4 w-4" />
-            Export Laser Cutting Template
+            Export to Excel
           </Button>
         </div>
       </div>
@@ -34,7 +34,7 @@ const MultipleInvoices = ({ extractedData }: { extractedData: any[] }) => {
 
       <div className="text-center mt-8">
         <p className="text-sm text-muted-foreground">
-          Click the "Export Laser Cutting Template" button above to download the Excel file
+          Click the "Export to Excel" button above to download the Excel file
         </p>
       </div>
     </div>

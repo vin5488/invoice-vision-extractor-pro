@@ -19,7 +19,7 @@ const ExportButtons = ({ invoice }: ExportButtonsProps) => {
         onClick={() => handleExportLaserCuttingInvoice(invoice)}
       >
         <FileText className="h-4 w-4" />
-        Export as Laser Cutting Invoice
+        Export to Excel
       </Button>
       
       <p className="text-xs text-muted-foreground mt-2 text-center">
