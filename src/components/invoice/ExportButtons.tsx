@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { FileSpreadsheet, ImageIcon } from 'lucide-react';
+import { FileSpreadsheet, ImageIcon, FileText } from 'lucide-react';
 import { useInvoiceExport } from '@/hooks/useInvoiceExport';
 
 interface ExportButtonsProps {
@@ -9,7 +9,7 @@ interface ExportButtonsProps {
 }
 
 const ExportButtons = ({ invoice }: ExportButtonsProps) => {
-  const { handleExportSingleInvoice, handleExportFromImage } = useInvoiceExport();
+  const { handleExportSingleInvoice, handleExportFromImage, handleExportLaserCuttingInvoice } = useInvoiceExport();
 
   return (
     <>
@@ -43,7 +43,7 @@ const ExportButtons = ({ invoice }: ExportButtonsProps) => {
         </div>
       </div>
 
-      <div className="pt-2">
+      <div className="pt-2 space-y-2">
         <Button 
           variant="default" 
           className="gap-2 w-full"
@@ -52,6 +52,16 @@ const ExportButtons = ({ invoice }: ExportButtonsProps) => {
           <ImageIcon className="h-4 w-4" />
           Export from Image
         </Button>
+        
+        <Button 
+          variant="outline" 
+          className="gap-2 w-full"
+          onClick={handleExportLaserCuttingInvoice}
+        >
+          <FileText className="h-4 w-4" />
+          Export as Laser Cutting Invoice
+        </Button>
+        
         <p className="text-xs text-muted-foreground mt-2 text-center">
           Uses image recognition data to generate Excel file
         </p>
