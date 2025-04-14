@@ -2,6 +2,7 @@
 import os
 import cv2
 import pandas as pd
+import numpy as np
 from openpyxl import Workbook
 from openpyxl.utils.dataframe import dataframe_to_rows
 from openpyxl.styles import Font, Alignment, Border, Side
@@ -17,11 +18,19 @@ class InvoiceExporter:
 
     def __init__(self):
         """Initialize the InvoiceExporter"""
-        pass
+        # Try to import pytesseract if available
+        try:
+            import pytesseract
+            self.pytesseract = pytesseract
+            self.ocr_available = True
+        except ImportError:
+            print("Warning: pytesseract not found. OCR functionality will be limited.")
+            self.ocr_available = False
 
     @staticmethod
     def get_default_manufacturing_template_data() -> Dict[str, Any]:
         """Generate default manufacturing template data"""
+        # ... keep existing code (default template data)
         return {
             "stateName": "Karnataka, Code : 29",
             "termsOfDelivery": "As per terms",
@@ -149,6 +158,7 @@ class InvoiceExporter:
         Returns:
             Path to the created Excel file
         """
+        # ... keep existing code (Excel creation functionality)
         # Use default data if none provided
         if data is None or not data:
             manufacturing_template = self.get_default_manufacturing_template_data()
@@ -194,7 +204,7 @@ class InvoiceExporter:
             ws.column_dimensions[column_letter].width = width
         
         # Save workbook
-        output_filename = f"Laser_Cutting_Invoice_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+        output_filename = f"Invoice_Export_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
         wb.save(output_filename)
         print(f"Excel file saved as {output_filename}")
         
@@ -202,7 +212,7 @@ class InvoiceExporter:
 
     def extract_data_from_image(self, image_path: str) -> Dict[str, Any]:
         """
-        Extract invoice data from an image using OpenCV
+        Extract invoice data from an image using OpenCV and OCR
         
         Args:
             image_path: Path to the invoice image
@@ -216,32 +226,167 @@ class InvoiceExporter:
         image = cv2.imread(image_path)
         if image is None:
             raise ValueError(f"Could not read image file: {image_path}")
+
+        # Enhanced table detection and extraction
+        extracted_data = self.detect_and_extract_table(image)
         
-        # Convert to grayscale for OCR preparation
+        # If extraction failed or no tables found, return placeholder data
+        if not extracted_data or not extracted_data.get("items"):
+            print("Warning: Could not extract tabular data properly, returning placeholder data")
+            return {
+                "invoiceNumber": f"INV-{os.path.basename(image_path).split('.')[0]}",
+                "date": pd.Timestamp.now().strftime('%Y-%m-%d'),
+                "materialId": f"MAT-{pd.Timestamp.now().strftime('%d%H%M')}",
+                "items": [
+                    {
+                        "description": "Extracted Item",
+                        "quantity": "1",
+                        "unitPrice": "100.00",
+                        "total": "100.00"
+                    }
+                ]
+            }
+            
+        return extracted_data
+
+    def detect_and_extract_table(self, image: np.ndarray) -> Dict[str, Any]:
+        """
+        Enhanced table detection and cell extraction from invoice image
+        
+        Args:
+            image: OpenCV image object
+            
+        Returns:
+            Dictionary containing extracted table data
+        """
+        # Convert to grayscale
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         
-        # Apply thresholding to get binary image
-        _, threshold = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY_INV)
+        # Apply adaptive thresholding
+        thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
+                                      cv2.THRESH_BINARY_INV, 11, 2)
         
-        # For now, return placeholder data
-        # In a real implementation, you would use OCR libraries like pytesseract
-        # to extract the text from the image and parse it into structured data
+        # Dilate to connect text in cells
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+        dilated = cv2.dilate(thresh, kernel, iterations=1)
         
-        print("Note: This is a placeholder for OCR functionality. For real OCR, integrate with pytesseract or other OCR libraries.")
+        # Find contours
+        contours, _ = cv2.findContours(dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         
-        # Return mock data
+        # Filter contours to get table cells (eliminate too small contours)
+        min_cell_area = image.shape[0] * image.shape[1] / 500  # Adaptive threshold based on image size
+        cells = []
+        
+        for contour in contours:
+            x, y, w, h = cv2.boundingRect(contour)
+            area = w * h
+            
+            # Filter out noise and keep only cell-like rectangles
+            if area > min_cell_area and w > 30 and h > 15:
+                # Add padding to make sure we capture entire cell content
+                padding = 2
+                x_with_padding = max(0, x - padding)
+                y_with_padding = max(0, y - padding)
+                w_with_padding = min(image.shape[1] - x_with_padding, w + 2*padding)
+                h_with_padding = min(image.shape[0] - y_with_padding, h + 2*padding)
+                
+                cells.append((x_with_padding, y_with_padding, w_with_padding, h_with_padding))
+        
+        # Sort cells by y-coordinate to group rows
+        cells.sort(key=lambda c: c[1])
+        
+        # Group cells into rows based on y-position
+        y_tolerance = image.shape[0] / 30  # Adaptive tolerance based on image height
+        rows = []
+        current_row = []
+        
+        if cells:
+            current_row = [cells[0]]
+            prev_y = cells[0][1]
+            
+            for i in range(1, len(cells)):
+                x, y, w, h = cells[i]
+                
+                # If this cell is on a new row
+                if abs(y - prev_y) > y_tolerance:
+                    # Sort current row by x-coordinate
+                    current_row.sort(key=lambda c: c[0])
+                    rows.append(current_row)
+                    current_row = [cells[i]]
+                    prev_y = y
+                else:
+                    current_row.append(cells[i])
+            
+            # Add the last row
+            if current_row:
+                current_row.sort(key=lambda c: c[0])
+                rows.append(current_row)
+        
+        # Parse table content using OCR if available
+        items = []
+        headers = []
+        
+        # Extract text from each cell
+        for i, row in enumerate(rows):
+            row_data = []
+            
+            for j, (x, y, w, h) in enumerate(row):
+                # Extract cell ROI
+                cell_image = gray[y:y+h, x:x+w]
+                
+                # Preprocess cell for better OCR
+                _, cell_binary = cv2.threshold(cell_image, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+                
+                # Apply OCR to the cell
+                if self.ocr_available:
+                    text = self.pytesseract.image_to_string(cell_binary).strip()
+                else:
+                    # If OCR isn't available, use cell position as placeholder
+                    text = f"Cell_{i}_{j}"
+                
+                row_data.append(text)
+            
+            if i == 0:  # First row is likely headers
+                headers = row_data
+            else:  # Other rows are data
+                # Create item dictionary based on likely column meanings
+                item = {}
+                
+                # Try to match data with common invoice fields
+                for j, cell_text in enumerate(row_data):
+                    col_name = f"col_{j}" if j >= len(headers) else headers[j]
+                    
+                    # Map to standard fields based on typical invoice structure
+                    # This is a simplistic approach - real mapping would be more complex
+                    if j == 0:  # First column often contains part numbers or IDs
+                        item["partNo"] = cell_text
+                    elif j == 1:  # Second column typically has descriptions
+                        item["description"] = cell_text
+                    elif j == 2:  # Third column might be HSN code
+                        item["hsn"] = cell_text
+                    elif j == 3:  # Fourth column often has quantity
+                        item["quantity"] = cell_text
+                    elif j == 4:  # Fifth column might have rates/prices
+                        item["rate"] = cell_text
+                    elif j == 5:  # Sixth column might have unit (per)
+                        item["per"] = cell_text
+                    elif j == 6:  # Seventh column might have discount
+                        item["discountPercentage"] = cell_text
+                    elif j == 7:  # Eighth column might have amount/total
+                        item["amount"] = cell_text
+                    else:
+                        item[f"field_{j}"] = cell_text
+                
+                if any(item.values()):  # Only add items that have some data
+                    items.append(item)
+        
+        # Construct and return the extracted data
         return {
-            "invoiceNumber": f"INV-{os.path.basename(image_path).split('.')[0]}",
+            "invoiceNumber": f"INV-{pd.Timestamp.now().strftime('%Y%m%d%H%M%S')}",
             "date": pd.Timestamp.now().strftime('%Y-%m-%d'),
-            "materialId": f"MAT-{pd.Timestamp.now().strftime('%d%H%M')}",
-            "items": [
-                {
-                    "description": "Laser Cut Item",
-                    "quantity": 10,
-                    "unitPrice": "100.00",
-                    "total": "1000.00"
-                }
-            ]
+            "stateName": "Extracted from Image",
+            "termsOfDelivery": "Standard",
+            "items": items
         }
 
 def process_file(file_path: str, exporter: InvoiceExporter) -> Dict[str, Any]:
