@@ -9,21 +9,21 @@ interface ExportButtonsProps {
 }
 
 const ExportButtons = ({ invoice }: ExportButtonsProps) => {
-  const { handleExportLaserCuttingInvoice } = useInvoiceExport();
+  const { handleExportToExcel } = useInvoiceExport();
 
   return (
     <div className="pt-2 space-y-2">
       <Button 
         variant="default" 
         className="gap-2 w-full"
-        onClick={() => handleExportLaserCuttingInvoice(invoice)}
+        onClick={() => handleExportToExcel(invoice)}
       >
         <FileText className="h-4 w-4" />
         Export to Excel
       </Button>
       
       <p className="text-xs text-muted-foreground mt-2 text-center">
-        Exports invoice data in the laser cutting format
+        Exports invoice data to Excel format
       </p>
     </div>
   );

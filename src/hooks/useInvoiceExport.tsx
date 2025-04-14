@@ -19,147 +19,81 @@ export const useInvoiceExport = () => {
     setTimeout(() => window.URL.revokeObjectURL(url), 100);
   };
 
-  // Generate standard manufacturing template data
-  const getDefaultManufacturingTemplateData = () => {
-    return {
-      stateName: "Karnataka, Code : 29",
-      termsOfDelivery: "As per terms",
-      items: [
-        {
-          partNo: "Laser Cutting-MIT-EA012B014-04",
-          description: "SIZE:147.4X179.7X6MM-CUT LENGTH-1207MM-HR",
-          hsn: "73269070",
-          quantity: "116 Nos.",
-          rate: "118.500",
-          per: "Nos.",
-          discountPercentage: "",
-          amount: "13,746.000"
-        },
-        {
-          partNo: "Laser Cutting-MIT-EA015C294-02",
-          description: "SIZE:110X222.4X6MM-CUT LENGTH-949MM-HR",
-          hsn: "73269070",
-          quantity: "100 Nos.",
-          rate: "103.000",
-          per: "Nos.",
-          discountPercentage: "",
-          amount: "10,300.000"
-        },
-        {
-          partNo: "Laser Cutting-MIT-EA021C281-05",
-          description: "SIZE:110X125X6MM-CUT LENGTH-543MM-HR",
-          hsn: "73269070",
-          quantity: "10 Nos.",
-          rate: "58.400",
-          per: "Nos.",
-          discountPercentage: "",
-          amount: "584.000"
-        },
-        {
-          partNo: "Laser Cutting-MIT-EA033C300-01",
-          description: "SIZE:170X240X6MM-CUT LENGTH-1287MM-HR",
-          hsn: "73269070",
-          quantity: "20 Nos.",
-          rate: "160.900",
-          per: "Nos.",
-          discountPercentage: "",
-          amount: "3,218.000"
-        },
-        {
-          partNo: "Laser Cutting-MIT-EA033C301-01",
-          description: "SIZE:125X145X6MM-CUT LENGTH-768MM-HR",
-          hsn: "73269070",
-          quantity: "10 Nos.",
-          rate: "78.900",
-          per: "Nos.",
-          discountPercentage: "",
-          amount: "789.000"
-        },
-        {
-          partNo: "Laser Cutting-MIT-EA111B538-04 REV 0",
-          description: "SIZE:175X355X6MM- CUT LENGTH1384MM-HR",
-          hsn: "73269070",
-          quantity: "12 Nos.",
-          rate: "223.300",
-          per: "Nos.",
-          discountPercentage: "",
-          amount: "2,679.600"
-        },
-        {
-          partNo: "Laser Cutting-MIT-EA131D685-01",
-          description: "SIZE:32X32X6MM-CUT LENGTH -157MM-HR 2062",
-          hsn: "73269070",
-          quantity: "180 Nos.",
-          rate: "8.800",
-          per: "Nos.",
-          discountPercentage: "",
-          amount: "1,584.000"
-        },
-        {
-          partNo: "Laser Cutting-MIT-EA175C796-01",
-          description: "SIZE:115X255.4X6MM-CUT LENGTH-1322MM-HR",
-          hsn: "73269070",
-          quantity: "28 Nos.",
-          rate: "130.800",
-          per: "Nos.",
-          discountPercentage: "",
-          amount: "3,662.400"
-        },
-        {
-          partNo: "Laser Cutting-MIT-EA179D554-01",
-          description: "SIZE:100X110X6MM-CUT LENGTH-664MM-HR",
-          hsn: "73269070",
-          quantity: "10 Nos.",
-          rate: "55.900",
-          per: "Nos.",
-          discountPercentage: "",
-          amount: "559.000"
-        },
-        {
-          partNo: "Laser Cutting-MIT-EA214C825-01LS1",
-          description: "SIZE:50X1155X6MM-CUT LENGTH 2617MM-HR",
-          hsn: "73269070",
-          quantity: "6 Nos.",
-          rate: "257.900",
-          per: "Nos.",
-          discountPercentage: "",
-          amount: "1,547.400"
-        },
-        {
-          partNo: "Laser Cutting-MIT-EA214C825-01LS2",
-          description: "SIZE:50X1230X6MM-CUT LENGTH 2767MM-HR",
-          hsn: "73269070",
-          quantity: "6 Nos.",
-          rate: "273.900",
-          per: "Nos.",
-          discountPercentage: "",
-          amount: "1,643.400"
+  // Process extracted data from images and format it for export
+  const processExtractedData = (data: any[]) => {
+    // If no data is provided, return empty template
+    if (!data || data.length === 0) {
+      return { items: [] };
+    }
+    
+    const items = [];
+    let stateName = "Invoice Data";
+    let termsOfDelivery = "Standard";
+    
+    // Process each invoice in the data array
+    for (const invoice of data) {
+      // If invoice has items array, process each item
+      if (invoice.items && Array.isArray(invoice.items)) {
+        for (const item of invoice.items) {
+          items.push({
+            partNo: item.partNo || invoice.invoiceNumber || `ITEM-${Math.floor(Math.random() * 10000)}`,
+            description: item.description || "Item description",
+            hsn: item.hsn || "",
+            quantity: item.quantity ? `${item.quantity} Nos.` : "1 Nos.",
+            rate: item.unitPrice || item.rate || "0.00",
+            per: item.per || "Nos.",
+            discountPercentage: item.discountPercentage || "",
+            amount: item.total || item.amount || "0.00"
+          });
         }
-      ]
+      } else {
+        // If invoice doesn't have items array, process the invoice itself as an item
+        items.push({
+          partNo: invoice.invoiceNumber || `INV-${Math.floor(Math.random() * 10000)}`,
+          description: invoice.description || "Invoice total",
+          hsn: invoice.hsn || "",
+          quantity: invoice.quantity ? `${invoice.quantity} Nos.` : "1 Nos.",
+          rate: invoice.unitPrice || invoice.rate || "0.00",
+          per: invoice.per || "Nos.",
+          discountPercentage: invoice.discountPercentage || "",
+          amount: invoice.total || invoice.amount || "0.00"
+        });
+      }
+      
+      // If any invoice has stateName or termsOfDelivery, use those
+      if (invoice.stateName) stateName = invoice.stateName;
+      if (invoice.termsOfDelivery) termsOfDelivery = invoice.termsOfDelivery;
+    }
+    
+    return {
+      stateName,
+      termsOfDelivery,
+      items
     };
   };
 
-  // Create manufacturing invoice Excel file
-  const createManufacturingExcel = (data: any) => {
+  // Create Excel spreadsheet from extracted data
+  const createExcelFromInvoiceData = (data: any) => {
     const workbook = XLSX.utils.book_new();
     
-    // Extract data or use default if not available
-    const manufacturingTemplate = data.manufacturingTableData || getDefaultManufacturingTemplateData();
+    // Process the extracted data to get formatted invoice data
+    const invoiceData = processExtractedData(Array.isArray(data) ? data : [data]);
     
     // Create the sheet data
-    const stateInfoSheet = [
-      ["State Name", ":", manufacturingTemplate.stateName, "", "", "", "Terms of Delivery", manufacturingTemplate.termsOfDelivery]
+    const sheetData = [
+      ["State Name", ":", invoiceData.stateName, "", "", "", "Terms of Delivery", invoiceData.termsOfDelivery]
     ];
     
-    stateInfoSheet.push([]);
+    sheetData.push([]);
     
-    stateInfoSheet.push([
+    sheetData.push([
       "SI No.", "Part No", "Description of Goods", "HSN/SAC", "Quantity", "Rate", "per", "Disc. %", "Amount"
     ]);
     
-    manufacturingTemplate.items.forEach((item: any, index: number) => {
-      stateInfoSheet.push([
-        (index + 1).toString(), // Convert index+1 to string to avoid type mismatch
+    // Add invoice items to the sheet
+    invoiceData.items.forEach((item: any, index: number) => {
+      sheetData.push([
+        (index + 1).toString(),
         item.partNo,
         item.description,
         item.hsn,
@@ -172,14 +106,14 @@ export const useInvoiceExport = () => {
     });
     
     // Create the worksheet and set column widths
-    const ws = XLSX.utils.aoa_to_sheet(stateInfoSheet);
+    const ws = XLSX.utils.aoa_to_sheet(sheetData);
     
     ws['!cols'] = [
       { wch: 5 }, { wch: 25 }, { wch: 30 }, { wch: 10 }, 
       { wch: 10 }, { wch: 10 }, { wch: 5 }, { wch: 10 }, { wch: 15 }
     ];
     
-    XLSX.utils.book_append_sheet(workbook, ws, "Manufacturing Invoice");
+    XLSX.utils.book_append_sheet(workbook, ws, "Invoice Data");
     
     // Convert to blob and return
     const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
@@ -187,27 +121,27 @@ export const useInvoiceExport = () => {
   };
 
   // Main export function - handles any file/data input
-  const handleExportLaserCuttingInvoice = (data: any = {}) => {
+  const handleExportToExcel = (data: any = {}) => {
     try {
       toast({
-        title: "Generating invoice",
-        description: "Creating laser cutting invoice template...",
+        title: "Generating Excel file",
+        description: "Creating invoice export...",
       });
       
       // Create Excel blob
-      const excelBlob = createManufacturingExcel(data);
+      const excelBlob = createExcelFromInvoiceData(data);
       
       // Generate a meaningful filename based on data or use default
       const fileName = Array.isArray(data) && data.length > 0 && data[0].invoiceNumber 
-        ? `Laser_Cutting_Invoice_${data[0].invoiceNumber}.xlsx`
-        : 'Laser_Cutting_Invoice.xlsx';
+        ? `Invoice_Export_${data[0].invoiceNumber}.xlsx`
+        : `Invoice_Export_${new Date().toISOString().split('T')[0]}.xlsx`;
       
       // Download the file
       downloadBlob(excelBlob, fileName);
       
       toast({
         title: "Export successful",
-        description: "Laser cutting invoice template has been downloaded",
+        description: "Invoice data has been exported to Excel",
       });
     } catch (error) {
       console.error("Excel generation error:", error);
@@ -220,6 +154,6 @@ export const useInvoiceExport = () => {
   };
 
   return {
-    handleExportLaserCuttingInvoice
+    handleExportToExcel
   };
 };

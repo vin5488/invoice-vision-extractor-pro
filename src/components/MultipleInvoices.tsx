@@ -7,7 +7,7 @@ import { useInvoiceExport } from '@/hooks/useInvoiceExport';
 
 const MultipleInvoices = ({ extractedData }: { extractedData: any[] }) => {
   const [selectedInvoice, setSelectedInvoice] = useState<any | null>(null);
-  const { handleExportLaserCuttingInvoice } = useInvoiceExport();
+  const { handleExportToExcel } = useInvoiceExport();
 
   const viewInvoiceDetails = (invoice: any) => {
     setSelectedInvoice(invoice);
@@ -20,7 +20,7 @@ const MultipleInvoices = ({ extractedData }: { extractedData: any[] }) => {
           {extractedData.length} Invoice{extractedData.length !== 1 && 's'} Processed
         </h3>
         <div className="flex flex-wrap gap-2">
-          <Button onClick={() => handleExportLaserCuttingInvoice(extractedData)} className="gap-2">
+          <Button onClick={() => handleExportToExcel(extractedData)} className="gap-2">
             <FileText className="h-4 w-4" />
             Export to Excel
           </Button>
