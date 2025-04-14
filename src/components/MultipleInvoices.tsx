@@ -13,6 +13,22 @@ const MultipleInvoices = ({ extractedData }: { extractedData: any[] }) => {
     setSelectedInvoice(invoice);
   };
 
+  // Add file information to extracted data if missing
+  const enhanceDataWithFileInfo = () => {
+    if (extractedData && extractedData.length > 0) {
+      return extractedData.map((invoice, index) => {
+        if (!invoice.fileName) {
+          return {
+            ...invoice,
+            fileName: `Invoice_${index + 1}`
+          };
+        }
+        return invoice;
+      });
+    }
+    return extractedData;
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap justify-between items-center gap-2">
@@ -20,7 +36,11 @@ const MultipleInvoices = ({ extractedData }: { extractedData: any[] }) => {
           {extractedData.length} Invoice{extractedData.length !== 1 && 's'} Processed
         </h3>
         <div className="flex flex-wrap gap-2">
-          <Button onClick={() => handleExportToExcel(extractedData)} className="gap-2">
+          <Button 
+            onClick={() => handleExportToExcel(enhanceDataWithFileInfo())} 
+            className="gap-2"
+            disabled={extractedData.length === 0}
+          >
             <FileText className="h-4 w-4" />
             Export to Excel
           </Button>
@@ -34,7 +54,7 @@ const MultipleInvoices = ({ extractedData }: { extractedData: any[] }) => {
 
       <div className="text-center mt-8">
         <p className="text-sm text-muted-foreground">
-          Click the "Export to Excel" button above to download the Excel file
+          Supports all image formats and sizes including PDFs, A3, and A4 sheets
         </p>
       </div>
     </div>

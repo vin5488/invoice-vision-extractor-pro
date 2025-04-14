@@ -19,22 +19,28 @@ export const useInvoiceExport = () => {
     setTimeout(() => window.URL.revokeObjectURL(url), 100);
   };
 
-  // Process extracted data from images and format it for export
-  const processExtractedData = (data: any[]) => {
-    // If no data is provided, return empty template
-    if (!data || data.length === 0) {
-      return { items: [] };
-    }
+  // Flexible data processing that can handle various input formats
+  const processExtractedData = (data: any) => {
+    // Handle empty data case
+    if (!data) return { items: [] };
+    
+    // Ensure data is always treated as an array
+    const dataArray = Array.isArray(data) ? data : [data];
+    if (dataArray.length === 0) return { items: [] };
     
     const items = [];
     let stateName = "Invoice Data";
     let termsOfDelivery = "Standard";
     
-    // Process each invoice in the data array
-    for (const invoice of data) {
-      // If invoice has items array, process each item
+    // Process each data item
+    for (const invoice of dataArray) {
+      if (!invoice) continue;
+      
+      // Handle different data structures
       if (invoice.items && Array.isArray(invoice.items)) {
+        // Case 1: Invoice contains items array
         for (const item of invoice.items) {
+          if (!item) continue;
           items.push({
             partNo: item.partNo || invoice.invoiceNumber || `ITEM-${Math.floor(Math.random() * 10000)}`,
             description: item.description || "Item description",
@@ -46,10 +52,10 @@ export const useInvoiceExport = () => {
             amount: item.total || item.amount || "0.00"
           });
         }
-      } else {
-        // If invoice doesn't have items array, process the invoice itself as an item
+      } else if (typeof invoice === 'object') {
+        // Case 2: Invoice is an object without items array
         items.push({
-          partNo: invoice.invoiceNumber || `INV-${Math.floor(Math.random() * 10000)}`,
+          partNo: invoice.invoiceNumber || invoice.partNo || `INV-${Math.floor(Math.random() * 10000)}`,
           description: invoice.description || "Invoice total",
           hsn: invoice.hsn || "",
           quantity: invoice.quantity ? `${invoice.quantity} Nos.` : "1 Nos.",
@@ -60,9 +66,24 @@ export const useInvoiceExport = () => {
         });
       }
       
-      // If any invoice has stateName or termsOfDelivery, use those
+      // Extract metadata if available
       if (invoice.stateName) stateName = invoice.stateName;
       if (invoice.termsOfDelivery) termsOfDelivery = invoice.termsOfDelivery;
+      
+      // Handle file metadata if present
+      if (invoice.fileName) {
+        const fileMeta = {
+          partNo: `FILE-${Math.floor(Math.random() * 10000)}`,
+          description: `Source: ${invoice.fileName}`,
+          hsn: "",
+          quantity: "1 Nos.",
+          rate: "",
+          per: "",
+          discountPercentage: "",
+          amount: ""
+        };
+        items.push(fileMeta);
+      }
     }
     
     return {
@@ -72,42 +93,49 @@ export const useInvoiceExport = () => {
     };
   };
 
-  // Create Excel spreadsheet from extracted data
+  // Create Excel spreadsheet with improved handling of diverse data
   const createExcelFromInvoiceData = (data: any) => {
     const workbook = XLSX.utils.book_new();
     
-    // Process the extracted data to get formatted invoice data
-    const invoiceData = processExtractedData(Array.isArray(data) ? data : [data]);
+    // Process data with more flexible approach
+    const invoiceData = processExtractedData(data);
     
-    // Create the sheet data
+    // Create sheet data with metadata
     const sheetData = [
-      ["State Name", ":", invoiceData.stateName, "", "", "", "Terms of Delivery", invoiceData.termsOfDelivery]
+      ["State Name", ":", invoiceData.stateName || "", "", "", "", "Terms of Delivery", invoiceData.termsOfDelivery || ""]
     ];
     
+    // Add empty row for spacing
     sheetData.push([]);
     
+    // Add headers
     sheetData.push([
       "SI No.", "Part No", "Description of Goods", "HSN/SAC", "Quantity", "Rate", "per", "Disc. %", "Amount"
     ]);
     
-    // Add invoice items to the sheet
-    invoiceData.items.forEach((item: any, index: number) => {
-      sheetData.push([
-        (index + 1).toString(),
-        item.partNo,
-        item.description,
-        item.hsn,
-        item.quantity,
-        item.rate,
-        item.per,
-        item.discountPercentage,
-        item.amount
-      ]);
-    });
+    // Add invoice items with error handling
+    if (invoiceData.items && Array.isArray(invoiceData.items)) {
+      invoiceData.items.forEach((item: any, index: number) => {
+        if (item) {
+          sheetData.push([
+            (index + 1).toString(),
+            item.partNo || "",
+            item.description || "",
+            item.hsn || "",
+            item.quantity || "",
+            item.rate || "",
+            item.per || "",
+            item.discountPercentage || "",
+            item.amount || ""
+          ]);
+        }
+      });
+    }
     
-    // Create the worksheet and set column widths
+    // Create and format worksheet
     const ws = XLSX.utils.aoa_to_sheet(sheetData);
     
+    // Set column widths for better readability
     ws['!cols'] = [
       { wch: 5 }, { wch: 25 }, { wch: 30 }, { wch: 10 }, 
       { wch: 10 }, { wch: 10 }, { wch: 5 }, { wch: 10 }, { wch: 15 }
@@ -120,7 +148,7 @@ export const useInvoiceExport = () => {
     return new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
   };
 
-  // Main export function - handles any file/data input
+  // Main export function with enhanced error handling
   const handleExportToExcel = (data: any = {}) => {
     try {
       toast({
@@ -128,13 +156,21 @@ export const useInvoiceExport = () => {
         description: "Creating invoice export...",
       });
       
-      // Create Excel blob
+      // Handle empty data case
+      if (!data || (Array.isArray(data) && data.length === 0)) {
+        toast({
+          title: "No data to export",
+          description: "There is no invoice data available to export",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Create Excel blob with more robust handling
       const excelBlob = createExcelFromInvoiceData(data);
       
-      // Generate a meaningful filename based on data or use default
-      const fileName = Array.isArray(data) && data.length > 0 && data[0].invoiceNumber 
-        ? `Invoice_Export_${data[0].invoiceNumber}.xlsx`
-        : `Invoice_Export_${new Date().toISOString().split('T')[0]}.xlsx`;
+      // Generate filename from data if possible
+      const fileName = getFilenameFromData(data);
       
       // Download the file
       downloadBlob(excelBlob, fileName);
@@ -151,6 +187,36 @@ export const useInvoiceExport = () => {
         variant: "destructive",
       });
     }
+  };
+
+  // Helper function to generate meaningful filenames
+  const getFilenameFromData = (data: any): string => {
+    // Handle array of invoices
+    if (Array.isArray(data) && data.length > 0) {
+      // Try to get invoice number from first item
+      if (data[0].invoiceNumber) {
+        return `Invoice_${data[0].invoiceNumber}_and_${data.length - 1}_others.xlsx`;
+      }
+      
+      // If we have filenames, use those
+      if (data[0].fileName) {
+        const baseName = data[0].fileName.split('.')[0];
+        return `${baseName}_processed.xlsx`;
+      }
+    } 
+    // Handle single invoice object
+    else if (data && typeof data === 'object') {
+      if (data.invoiceNumber) {
+        return `Invoice_${data.invoiceNumber}.xlsx`;
+      }
+      if (data.fileName) {
+        const baseName = data.fileName.split('.')[0];
+        return `${baseName}_processed.xlsx`;
+      }
+    }
+    
+    // Default fallback with timestamp
+    return `Invoice_Export_${new Date().toISOString().split('T')[0]}.xlsx`;
   };
 
   return {

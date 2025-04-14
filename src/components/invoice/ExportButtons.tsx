@@ -23,7 +23,7 @@ const ExportButtons = ({ invoice }: ExportButtonsProps) => {
       </Button>
       
       <p className="text-xs text-muted-foreground mt-2 text-center">
-        Exports invoice data to Excel format - supports any image size including A3, A4 sheets
+        Supports all image types and sizes including A3, A4 sheets and PDFs
       </p>
     </div>
   );
