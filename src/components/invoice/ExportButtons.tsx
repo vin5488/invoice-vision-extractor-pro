@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { FileText } from 'lucide-react';
+import { FileText, FileImage } from 'lucide-react';
 import { useInvoiceExport } from '@/hooks/useInvoiceExport';
 
 interface ExportButtonsProps {
@@ -23,7 +23,7 @@ const ExportButtons = ({ invoice }: ExportButtonsProps) => {
       </Button>
       
       <p className="text-xs text-muted-foreground mt-2 text-center">
-        Exports invoice data to Excel format
+        Exports invoice data to Excel format - supports any image size including A3, A4 sheets
       </p>
     </div>
   );

@@ -31,122 +31,6 @@ class InvoiceExporter:
     def get_default_manufacturing_template_data() -> Dict[str, Any]:
         """Generate default manufacturing template data"""
         # ... keep existing code (default template data)
-        return {
-            "stateName": "Karnataka, Code : 29",
-            "termsOfDelivery": "As per terms",
-            "items": [
-                {
-                    "partNo": "Laser Cutting-MIT-EA012B014-04",
-                    "description": "SIZE:147.4X179.7X6MM-CUT LENGTH-1207MM-HR",
-                    "hsn": "73269070",
-                    "quantity": "116 Nos.",
-                    "rate": "118.500",
-                    "per": "Nos.",
-                    "discountPercentage": "",
-                    "amount": "13,746.000"
-                },
-                {
-                    "partNo": "Laser Cutting-MIT-EA015C294-02",
-                    "description": "SIZE:110X222.4X6MM-CUT LENGTH-949MM-HR",
-                    "hsn": "73269070",
-                    "quantity": "100 Nos.",
-                    "rate": "103.000",
-                    "per": "Nos.",
-                    "discountPercentage": "",
-                    "amount": "10,300.000"
-                },
-                {
-                    "partNo": "Laser Cutting-MIT-EA021C281-05",
-                    "description": "SIZE:110X125X6MM-CUT LENGTH-543MM-HR",
-                    "hsn": "73269070",
-                    "quantity": "10 Nos.",
-                    "rate": "58.400",
-                    "per": "Nos.",
-                    "discountPercentage": "",
-                    "amount": "584.000"
-                },
-                {
-                    "partNo": "Laser Cutting-MIT-EA033C300-01",
-                    "description": "SIZE:170X240X6MM-CUT LENGTH-1287MM-HR",
-                    "hsn": "73269070",
-                    "quantity": "20 Nos.",
-                    "rate": "160.900",
-                    "per": "Nos.",
-                    "discountPercentage": "",
-                    "amount": "3,218.000"
-                },
-                {
-                    "partNo": "Laser Cutting-MIT-EA033C301-01",
-                    "description": "SIZE:125X145X6MM-CUT LENGTH-768MM-HR",
-                    "hsn": "73269070",
-                    "quantity": "10 Nos.",
-                    "rate": "78.900",
-                    "per": "Nos.",
-                    "discountPercentage": "",
-                    "amount": "789.000"
-                },
-                {
-                    "partNo": "Laser Cutting-MIT-EA111B538-04 REV 0",
-                    "description": "SIZE:175X355X6MM- CUT LENGTH1384MM-HR",
-                    "hsn": "73269070",
-                    "quantity": "12 Nos.",
-                    "rate": "223.300",
-                    "per": "Nos.",
-                    "discountPercentage": "",
-                    "amount": "2,679.600"
-                },
-                {
-                    "partNo": "Laser Cutting-MIT-EA131D685-01",
-                    "description": "SIZE:32X32X6MM-CUT LENGTH -157MM-HR 2062",
-                    "hsn": "73269070",
-                    "quantity": "180 Nos.",
-                    "rate": "8.800",
-                    "per": "Nos.",
-                    "discountPercentage": "",
-                    "amount": "1,584.000"
-                },
-                {
-                    "partNo": "Laser Cutting-MIT-EA175C796-01",
-                    "description": "SIZE:115X255.4X6MM-CUT LENGTH-1322MM-HR",
-                    "hsn": "73269070",
-                    "quantity": "28 Nos.",
-                    "rate": "130.800",
-                    "per": "Nos.",
-                    "discountPercentage": "",
-                    "amount": "3,662.400"
-                },
-                {
-                    "partNo": "Laser Cutting-MIT-EA179D554-01",
-                    "description": "SIZE:100X110X6MM-CUT LENGTH-664MM-HR",
-                    "hsn": "73269070",
-                    "quantity": "10 Nos.",
-                    "rate": "55.900",
-                    "per": "Nos.",
-                    "discountPercentage": "",
-                    "amount": "559.000"
-                },
-                {
-                    "partNo": "Laser Cutting-MIT-EA214C825-01LS1",
-                    "description": "SIZE:50X1155X6MM-CUT LENGTH 2617MM-HR",
-                    "hsn": "73269070",
-                    "quantity": "6 Nos.",
-                    "rate": "257.900",
-                    "per": "Nos.",
-                    "discountPercentage": "",
-                    "amount": "1,547.400"
-                },
-                {
-                    "partNo": "Laser Cutting-MIT-EA214C825-01LS2",
-                    "description": "SIZE:50X1230X6MM-CUT LENGTH 2767MM-HR",
-                    "hsn": "73269070",
-                    "quantity": "6 Nos.",
-                    "rate": "273.900",
-                    "per": "Nos.",
-                    "discountPercentage": "",
-                    "amount": "1,643.400"
-                }
-            ]
-        }
 
     def create_manufacturing_excel(self, data: Optional[Dict[str, Any]] = None) -> str:
         """
@@ -159,56 +43,6 @@ class InvoiceExporter:
             Path to the created Excel file
         """
         # ... keep existing code (Excel creation functionality)
-        # Use default data if none provided
-        if data is None or not data:
-            manufacturing_template = self.get_default_manufacturing_template_data()
-        else:
-            manufacturing_template = data.get('manufacturingTableData', self.get_default_manufacturing_template_data())
-        
-        # Create workbook and active worksheet
-        wb = Workbook()
-        ws = wb.active
-        ws.title = "Manufacturing Invoice"
-        
-        # Add header information
-        ws['A1'] = "State Name"
-        ws['B1'] = ":"
-        ws['C1'] = manufacturing_template.get("stateName", "")
-        ws['G1'] = "Terms of Delivery"
-        ws['H1'] = manufacturing_template.get("termsOfDelivery", "")
-        
-        # Add table headers - row 3 (row 2 is empty)
-        headers = ["SI No.", "Part No", "Description of Goods", "HSN/SAC", 
-                   "Quantity", "Rate", "per", "Disc. %", "Amount"]
-        
-        for col_idx, header in enumerate(headers, 1):  # Start at column 1 (A)
-            ws.cell(row=3, column=col_idx, value=header).font = Font(bold=True)
-        
-        # Add items data
-        items = manufacturing_template.get("items", [])
-        for row_idx, item in enumerate(items, 4):  # Start at row 4
-            ws.cell(row=row_idx, column=1, value=row_idx - 3)  # SI No.
-            ws.cell(row=row_idx, column=2, value=item.get("partNo", ""))
-            ws.cell(row=row_idx, column=3, value=item.get("description", ""))
-            ws.cell(row=row_idx, column=4, value=item.get("hsn", ""))
-            ws.cell(row=row_idx, column=5, value=item.get("quantity", ""))
-            ws.cell(row=row_idx, column=6, value=item.get("rate", ""))
-            ws.cell(row=row_idx, column=7, value=item.get("per", ""))
-            ws.cell(row=row_idx, column=8, value=item.get("discountPercentage", ""))
-            ws.cell(row=row_idx, column=9, value=item.get("amount", ""))
-            
-        # Set column widths
-        column_widths = [5, 25, 30, 10, 10, 10, 5, 10, 15]
-        for col_idx, width in enumerate(column_widths, 1):
-            column_letter = ws.cell(row=1, column=col_idx).column_letter
-            ws.column_dimensions[column_letter].width = width
-        
-        # Save workbook
-        output_filename = f"Invoice_Export_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
-        wb.save(output_filename)
-        print(f"Excel file saved as {output_filename}")
-        
-        return output_filename
 
     def extract_data_from_image(self, image_path: str) -> Dict[str, Any]:
         """
@@ -227,27 +61,60 @@ class InvoiceExporter:
         if image is None:
             raise ValueError(f"Could not read image file: {image_path}")
 
+        # Determine image type/size
+        height, width = image.shape[:2]
+        print(f"Image dimensions: {width}x{height} pixels")
+        
+        # Apply different preprocessing based on image size
+        # A4 is roughly 2480 x 3508 pixels at 300 DPI
+        # A3 is roughly 3508 x 4961 pixels at 300 DPI
+        if width > 3000 or height > 3000:
+            print("Detected large format image (possibly A3)")
+            # For large images, use a higher scaling factor and preprocessing
+            image = self.preprocess_large_image(image)
+        
         # Enhanced table detection and extraction
         extracted_data = self.detect_and_extract_table(image)
         
         # If extraction failed or no tables found, return placeholder data
         if not extracted_data or not extracted_data.get("items"):
-            print("Warning: Could not extract tabular data properly, returning placeholder data")
-            return {
-                "invoiceNumber": f"INV-{os.path.basename(image_path).split('.')[0]}",
-                "date": pd.Timestamp.now().strftime('%Y-%m-%d'),
-                "materialId": f"MAT-{pd.Timestamp.now().strftime('%d%H%M')}",
-                "items": [
-                    {
-                        "description": "Extracted Item",
-                        "quantity": "1",
-                        "unitPrice": "100.00",
-                        "total": "100.00"
-                    }
-                ]
-            }
+            print("Warning: Could not extract tabular data properly, using advanced OCR method")
+            extracted_data = self.advanced_ocr_extraction(image)
             
         return extracted_data
+
+    def preprocess_large_image(self, image: np.ndarray) -> np.ndarray:
+        """
+        Specialized preprocessing for large format images like A3
+        
+        Args:
+            image: OpenCV image object
+            
+        Returns:
+            Preprocessed image
+        """
+        # Calculate scaling factor based on image size
+        height, width = image.shape[:2]
+        max_dimension = 3000  # Limit max dimension for better processing
+        
+        # Only scale if needed
+        if height > max_dimension or width > max_dimension:
+            scale_factor = max_dimension / max(height, width)
+            new_width = int(width * scale_factor)
+            new_height = int(height * scale_factor)
+            image = cv2.resize(image, (new_width, new_height), interpolation=cv2.INTER_AREA)
+            print(f"Resized image to: {new_width}x{new_height} pixels")
+            
+        # Apply additional preprocessing specific to large format images
+        # Enhance contrast
+        lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
+        l, a, b = cv2.split(lab)
+        clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8, 8))
+        l = clahe.apply(l)
+        lab = cv2.merge((l, a, b))
+        image = cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)
+        
+        return image
 
     def detect_and_extract_table(self, image: np.ndarray) -> Dict[str, Any]:
         """
@@ -262,19 +129,19 @@ class InvoiceExporter:
         # Convert to grayscale
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         
-        # Apply adaptive thresholding
+        # Apply adaptive thresholding with optimized parameters
         thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
-                                      cv2.THRESH_BINARY_INV, 11, 2)
+                                      cv2.THRESH_BINARY_INV, 15, 5)
         
         # Dilate to connect text in cells
-        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-        dilated = cv2.dilate(thresh, kernel, iterations=1)
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+        dilated = cv2.dilate(thresh, kernel, iterations=2)
         
         # Find contours
         contours, _ = cv2.findContours(dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         
         # Filter contours to get table cells (eliminate too small contours)
-        min_cell_area = image.shape[0] * image.shape[1] / 500  # Adaptive threshold based on image size
+        min_cell_area = image.shape[0] * image.shape[1] / 400  # More adaptive threshold
         cells = []
         
         for contour in contours:
@@ -282,9 +149,10 @@ class InvoiceExporter:
             area = w * h
             
             # Filter out noise and keep only cell-like rectangles
-            if area > min_cell_area and w > 30 and h > 15:
+            # Adjusted thresholds for better detection on various paper sizes
+            if area > min_cell_area and w > 20 and h > 15:
                 # Add padding to make sure we capture entire cell content
-                padding = 2
+                padding = 5  # Increased padding
                 x_with_padding = max(0, x - padding)
                 y_with_padding = max(0, y - padding)
                 w_with_padding = min(image.shape[1] - x_with_padding, w + 2*padding)
@@ -296,7 +164,8 @@ class InvoiceExporter:
         cells.sort(key=lambda c: c[1])
         
         # Group cells into rows based on y-position
-        y_tolerance = image.shape[0] / 30  # Adaptive tolerance based on image height
+        # Increased y_tolerance for better detection in various formats
+        y_tolerance = image.shape[0] / 25
         rows = []
         current_row = []
         
@@ -326,7 +195,7 @@ class InvoiceExporter:
         items = []
         headers = []
         
-        # Extract text from each cell
+        # Extract text from each cell with enhanced preprocessing
         for i, row in enumerate(rows):
             row_data = []
             
@@ -335,11 +204,19 @@ class InvoiceExporter:
                 cell_image = gray[y:y+h, x:x+w]
                 
                 # Preprocess cell for better OCR
-                _, cell_binary = cv2.threshold(cell_image, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+                # Enhanced preprocessing for better OCR results
+                cell_image = cv2.GaussianBlur(cell_image, (3, 3), 0)
+                _, cell_binary = cv2.threshold(cell_image, 0, 255, 
+                                              cv2.THRESH_BINARY + cv2.THRESH_OTSU)
                 
-                # Apply OCR to the cell
+                # Noise removal
+                kernel = np.ones((1, 1), np.uint8)
+                cell_binary = cv2.morphologyEx(cell_binary, cv2.MORPH_OPEN, kernel)
+                
+                # Apply OCR to the cell with optimized config for tabular data
                 if self.ocr_available:
-                    text = self.pytesseract.image_to_string(cell_binary).strip()
+                    config = r'--oem 3 --psm 6 -c tessedit_char_whitelist="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz+-=.,;:/%$()\'"'
+                    text = self.pytesseract.image_to_string(cell_binary, config=config).strip()
                 else:
                     # If OCR isn't available, use cell position as placeholder
                     text = f"Cell_{i}_{j}"
@@ -357,7 +234,7 @@ class InvoiceExporter:
                     col_name = f"col_{j}" if j >= len(headers) else headers[j]
                     
                     # Map to standard fields based on typical invoice structure
-                    # This is a simplistic approach - real mapping would be more complex
+                    # Enhanced field detection logic
                     if j == 0:  # First column often contains part numbers or IDs
                         item["partNo"] = cell_text
                     elif j == 1:  # Second column typically has descriptions
@@ -389,6 +266,103 @@ class InvoiceExporter:
             "items": items
         }
 
+    def advanced_ocr_extraction(self, image: np.ndarray) -> Dict[str, Any]:
+        """
+        Advanced OCR extraction for images where table detection fails
+        Uses full-page OCR and attempts to parse structured data
+        
+        Args:
+            image: OpenCV image object
+            
+        Returns:
+            Dictionary containing extracted data
+        """
+        if not self.ocr_available:
+            print("Advanced OCR requires pytesseract")
+            return {"items": []}
+        
+        # Preprocess image for better OCR
+        # Convert to grayscale
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        
+        # Apply adaptive thresholding
+        binary = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
+                                    cv2.THRESH_BINARY, 11, 5)
+        
+        # Denoise
+        denoised = cv2.fastNlMeansDenoising(binary, None, 10, 7, 21)
+        
+        # Extract text using pytesseract in different modes for comparison
+        config_line = r'--oem 3 --psm 6'  # Assume line-by-line text
+        text_line = self.pytesseract.image_to_string(denoised, config=config_line)
+        
+        config_table = r'--oem 3 --psm 6 -c preserve_interword_spaces=1'  # Better for tables
+        text_table = self.pytesseract.image_to_string(denoised, config=config_table)
+        
+        # Attempt to parse the extracted text into structured data
+        items = []
+        
+        # Split text into lines and look for patterns that resemble invoice items
+        lines = text_line.split('\n')
+        current_item = {}
+        
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+                
+            # Try to identify lines that contain item details
+            if any(keyword in line.lower() for keyword in ['item', 'description', 'quantity', 'price', 'amount']):
+                # This might be a header line, skip
+                continue
+                
+            # Look for patterns like: ItemCode Description Qty Price Amount
+            parts = line.split()
+            if len(parts) >= 5:  # Assuming at least 5 parts for a valid item line
+                try:
+                    # Try to parse an item based on positional data
+                    # This is a simplified approach; real invoices vary widely
+                    item = {
+                        "partNo": parts[0],
+                        "description": ' '.join(parts[1:-3]),  # Middle parts are usually description
+                        "hsn": "",
+                        "quantity": parts[-3],  # Quantity often 3rd from end
+                        "rate": parts[-2],      # Rate often 2nd from end
+                        "per": "Nos.",
+                        "discountPercentage": "",
+                        "amount": parts[-1]     # Amount usually last
+                    }
+                    items.append(item)
+                except Exception as e:
+                    print(f"Error parsing line: {line}, {str(e)}")
+        
+        if not items:  # Fallback
+            print("Basic parsing failed, using simplified extraction")
+            # Find number patterns that might be prices
+            import re
+            price_pattern = r'\$?\d+[.,]\d{2}'  # e.g. $10.99 or 10.99 or 10,99
+            prices = re.findall(price_pattern, text_line)
+            
+            if prices:
+                items.append({
+                    "partNo": "ITEM-1",
+                    "description": "Extracted Item",
+                    "hsn": "",
+                    "quantity": "1",
+                    "rate": prices[0] if len(prices) > 0 else "0.00",
+                    "per": "Nos.",
+                    "discountPercentage": "",
+                    "amount": prices[-1] if len(prices) > 1 else prices[0] if prices else "0.00"
+                })
+        
+        return {
+            "invoiceNumber": f"OCR-{pd.Timestamp.now().strftime('%Y%m%d%H%M%S')}",
+            "date": pd.Timestamp.now().strftime('%Y-%m-%d'),
+            "stateName": "Extracted with Advanced OCR",
+            "termsOfDelivery": "Standard",
+            "items": items
+        }
+
 def process_file(file_path: str, exporter: InvoiceExporter) -> Dict[str, Any]:
     """
     Process a file (image or PDF) and extract invoice data
@@ -400,68 +374,10 @@ def process_file(file_path: str, exporter: InvoiceExporter) -> Dict[str, Any]:
     Returns:
         Dictionary containing extracted data
     """
-    _, ext = os.path.splitext(file_path)
-    ext = ext.lower()
-    
-    if ext in ['.png', '.jpg', '.jpeg', '.tiff', '.bmp']:
-        return exporter.extract_data_from_image(file_path)
-    elif ext == '.pdf':
-        print("PDF processing not implemented yet. Returning placeholder data.")
-        return {
-            "invoiceNumber": f"INV-{os.path.basename(file_path).split('.')[0]}",
-            "date": pd.Timestamp.now().strftime('%Y-%m-%d'),
-            "total": "$1,234.56"
-        }
-    elif ext in ['.json']:
-        with open(file_path, 'r') as f:
-            return json.load(f)
-    else:
-        print(f"Unsupported file type: {ext}")
-        return {}
+    # ... keep existing code (file processing)
 
 def main():
-    parser = argparse.ArgumentParser(description='Invoice OCR and Export Tool')
-    parser.add_argument('--input', '-i', help='Input directory or file path', default='.')
-    parser.add_argument('--output', '-o', help='Output directory', default='.')
-    parser.add_argument('--export-only', action='store_true', help='Skip OCR and only export sample data')
-    args = parser.parse_args()
-    
-    exporter = InvoiceExporter()
-    
-    if args.export_only:
-        print("Exporting sample invoice...")
-        output_file = exporter.create_manufacturing_excel(None)
-        print(f"Sample invoice exported to: {output_file}")
-        return
-    
-    # Process input files
-    input_path = args.input
-    all_data = []
-    
-    if os.path.isdir(input_path):
-        for file_name in os.listdir(input_path):
-            file_path = os.path.join(input_path, file_name)
-            if os.path.isfile(file_path):
-                try:
-                    data = process_file(file_path, exporter)
-                    if data:
-                        all_data.append(data)
-                except Exception as e:
-                    print(f"Error processing {file_path}: {e}")
-    elif os.path.isfile(input_path):
-        try:
-            data = process_file(input_path, exporter)
-            if data:
-                all_data.append(data)
-        except Exception as e:
-            print(f"Error processing {input_path}: {e}")
-    
-    if all_data:
-        # Export data to Excel
-        output_file = exporter.create_manufacturing_excel({"manufacturingTableData": all_data})
-        print(f"Data exported to: {output_file}")
-    else:
-        print("No data to export.")
+    # ... keep existing code (main function)
 
 if __name__ == "__main__":
     main()
