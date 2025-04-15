@@ -1,13 +1,13 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { FileText } from 'lucide-react';
+import { FileText, FileImage } from 'lucide-react';
 import InvoiceTable from '@/components/invoice/InvoiceTable';
 import { useInvoiceExport } from '@/hooks/useInvoiceExport';
 
 const MultipleInvoices = ({ extractedData }: { extractedData: any[] }) => {
   const [selectedInvoice, setSelectedInvoice] = useState<any | null>(null);
-  const { handleExportToExcel } = useInvoiceExport();
+  const { handleExportToExcel, handleImageToExcel } = useInvoiceExport();
 
   const viewInvoiceDetails = (invoice: any) => {
     setSelectedInvoice(invoice);
@@ -29,6 +29,10 @@ const MultipleInvoices = ({ extractedData }: { extractedData: any[] }) => {
     return extractedData;
   };
 
+  const handleSelectImageFile = () => {
+    handleImageToExcel();
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap justify-between items-center gap-2">
@@ -43,6 +47,14 @@ const MultipleInvoices = ({ extractedData }: { extractedData: any[] }) => {
           >
             <FileText className="h-4 w-4" />
             Export to Excel
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleSelectImageFile}
+            className="gap-2"
+          >
+            <FileImage className="h-4 w-4" />
+            Convert Image to Excel
           </Button>
         </div>
       </div>

@@ -1,6 +1,7 @@
 
 import { useToast } from '@/hooks/use-toast';
 import * as XLSX from 'xlsx';
+import { ImageToExcel } from '@/utils/ImageToExcel';
 
 export const useInvoiceExport = () => {
   const { toast } = useToast();
@@ -189,6 +190,84 @@ export const useInvoiceExport = () => {
     }
   };
 
+  // Function to handle image-to-Excel conversion
+  const handleImageToExcel = async (data: any = {}) => {
+    try {
+      // Check if there are files to process
+      if (!data || !data.file) {
+        // Show file picker
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*, application/pdf';
+        
+        input.onchange = async (e) => {
+          const target = e.target as HTMLInputElement;
+          if (target.files && target.files.length > 0) {
+            const file = target.files[0];
+            await processFileToExcel(file);
+          }
+        };
+        
+        input.click();
+        return;
+      }
+      
+      // If data contains a file, process it directly
+      if (data.file instanceof File) {
+        await processFileToExcel(data.file);
+      }
+    } catch (error) {
+      console.error("Image processing error:", error);
+      toast({
+        title: "Processing failed",
+        description: "There was an error processing the image",
+        variant: "destructive",
+      });
+    }
+  };
+  
+  // Process a file to Excel
+  const processFileToExcel = async (file: File) => {
+    toast({
+      title: "Processing file",
+      description: `Converting ${file.name} to Excel...`,
+    });
+    
+    try {
+      // Process based on file type
+      let excelBlob: Blob;
+      
+      if (file.type.startsWith('image/')) {
+        // Process image
+        excelBlob = await ImageToExcel.processImage(file);
+      } else if (file.type === 'application/pdf') {
+        // Process PDF
+        excelBlob = await ImageToExcel.processPDF(file);
+      } else {
+        throw new Error('Unsupported file type');
+      }
+      
+      // Generate filename
+      const baseName = file.name.split('.')[0];
+      const fileName = `${baseName}_processed.xlsx`;
+      
+      // Download the file
+      downloadBlob(excelBlob, fileName);
+      
+      toast({
+        title: "Processing complete",
+        description: `${file.name} has been converted to Excel`,
+      });
+    } catch (error) {
+      console.error("File processing error:", error);
+      toast({
+        title: "Processing failed",
+        description: "Could not convert the file to Excel",
+        variant: "destructive",
+      });
+    }
+  };
+
   // Helper function to generate meaningful filenames
   const getFilenameFromData = (data: any): string => {
     // Handle array of invoices
@@ -220,6 +299,7 @@ export const useInvoiceExport = () => {
   };
 
   return {
-    handleExportToExcel
+    handleExportToExcel,
+    handleImageToExcel
   };
 };

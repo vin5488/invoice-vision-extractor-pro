@@ -9,7 +9,7 @@ interface ExportButtonsProps {
 }
 
 const ExportButtons = ({ invoice }: ExportButtonsProps) => {
-  const { handleExportToExcel } = useInvoiceExport();
+  const { handleExportToExcel, handleImageToExcel } = useInvoiceExport();
 
   return (
     <div className="pt-2 space-y-2">
@@ -20,6 +20,15 @@ const ExportButtons = ({ invoice }: ExportButtonsProps) => {
       >
         <FileText className="h-4 w-4" />
         Export to Excel
+      </Button>
+      
+      <Button 
+        variant="outline" 
+        className="gap-2 w-full"
+        onClick={() => handleImageToExcel(invoice)}
+      >
+        <FileImage className="h-4 w-4" />
+        Process Image to Excel
       </Button>
       
       <p className="text-xs text-muted-foreground mt-2 text-center">
